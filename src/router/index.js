@@ -47,6 +47,22 @@ export const constantRoutes = [
     component: () => import('@/views/register'),
     hidden: true
   },
+  // 工作流设计器（放在 404 前面确保优先匹配）
+  {
+    path: '/workflow/designer/index/:modelId(.*)',
+    component: () => import('@/views/workflow/model/designer'),
+    name: 'WorkflowDesigner',
+    hidden: true,
+    meta: { title: '流程设计器' }
+  },
+  // 业务详情（供待办/已办 iframe 嵌入）
+  {
+    path: '/workflow/leave/detail/:id(.*)',
+    component: () => import('@/views/workflow/leave/detail'),
+    name: 'LeaveDetail',
+    hidden: true,
+    meta: { title: '请假详情' }
+  },
   {
     path: "/:pathMatch(.*)*",
     component: () => import('@/views/error/404'),
@@ -163,7 +179,10 @@ export const dynamicRoutes = [
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
-  }
+  },
+
+  // 注意：流程模型/定义/实例/任务 这4个页面由后端菜单系统动态加载，
+  // 无需在此处的 dynamicRoutes 中定义，否则会与后端路由冲突导致页面空白。
 ]
 
 const router = createRouter({
@@ -175,6 +194,14 @@ const router = createRouter({
     }
     return { top: 0 }
   },
+})
+
+// 注册工作流设计器路由（扁平路由，不嵌套 Layout，避免与后端 menu 路径冲突）
+router.addRoute({
+  path: '/workflow/designer/index/:modelId(.*)',
+  component: () => import('@/views/workflow/model/designer'),
+  name: 'WorkflowDesigner',
+  meta: { title: '流程设计器', hidden: true }
 })
 
 export default router
