@@ -30,7 +30,7 @@ export function addNotice(data) {
 export function updateNotice(data) {
   return request({
     url: '/system/notice',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -39,7 +39,7 @@ export function updateNotice(data) {
 export function delNotice(noticeId) {
   return request({
     url: '/system/notice/' + noticeId,
-    method: 'delete'
+    method: 'post'
   })
 }
 

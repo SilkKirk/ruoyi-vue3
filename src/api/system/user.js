@@ -31,7 +31,7 @@ export function addUser(data) {
 export function updateUser(data) {
   return request({
     url: '/system/user',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -40,7 +40,7 @@ export function updateUser(data) {
 export function delUser(userId) {
   return request({
     url: '/system/user/' + userId,
-    method: 'delete'
+    method: 'post'
   })
 }
 
@@ -52,7 +52,7 @@ export function resetUserPwd(userId, password) {
   }
   return request({
     url: '/system/user/resetPwd',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -65,7 +65,7 @@ export function changeUserStatus(userId, status) {
   }
   return request({
     url: '/system/user/changeStatus',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -82,7 +82,7 @@ export function getUserProfile() {
 export function updateUserProfile(data) {
   return request({
     url: '/system/user/profile',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -95,7 +95,7 @@ export function updateUserPwd(oldPassword, newPassword) {
   }
   return request({
     url: '/system/user/profile/updatePwd',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -122,7 +122,7 @@ export function getAuthRole(userId) {
 export function updateAuthRole(data) {
   return request({
     url: '/system/user/authRole',
-    method: 'put',
+    method: 'post',
     params: data
   })
 }

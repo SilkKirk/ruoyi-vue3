@@ -36,7 +36,7 @@ export function getCacheValue(cacheName, cacheKey) {
 export function clearCacheName(cacheName) {
   return request({
     url: '/monitor/cache/clearCacheName/' + cacheName,
-    method: 'delete'
+    method: 'post'
   })
 }
 
@@ -44,7 +44,7 @@ export function clearCacheName(cacheName) {
 export function clearCacheKey(cacheKey) {
   return request({
     url: '/monitor/cache/clearCacheKey/' + cacheKey,
-    method: 'delete'
+    method: 'post'
   })
 }
 
@@ -52,6 +52,6 @@ export function clearCacheKey(cacheKey) {
 export function clearCacheAll() {
   return request({
     url: '/monitor/cache/clearCacheAll',
-    method: 'delete'
+    method: 'post'
   })
 }

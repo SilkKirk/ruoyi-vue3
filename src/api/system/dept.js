@@ -38,7 +38,7 @@ export function addDept(data) {
 export function updateDept(data) {
   return request({
     url: '/system/dept',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -47,7 +47,7 @@ export function updateDept(data) {
 export function updateDeptSort(data) {
   return request({
     url: '/system/dept/updateSort',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -56,6 +56,6 @@ export function updateDeptSort(data) {
 export function delDept(deptId) {
   return request({
     url: '/system/dept/' + deptId,
-    method: 'delete'
+    method: 'post'
   })
 }

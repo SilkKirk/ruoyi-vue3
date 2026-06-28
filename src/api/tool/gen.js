@@ -29,7 +29,7 @@ export function getGenTable(tableId) {
 export function updateGenTable(data) {
   return request({
     url: '/tool/gen',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -64,7 +64,7 @@ export function previewTable(tableId) {
 export function delTable(tableId) {
   return request({
     url: '/tool/gen/' + tableId,
-    method: 'delete'
+    method: 'post'
   })
 }
 

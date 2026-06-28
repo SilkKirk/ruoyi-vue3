@@ -38,7 +38,7 @@ export function addConfig(data) {
 export function updateConfig(data) {
   return request({
     url: '/system/config',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -47,7 +47,7 @@ export function updateConfig(data) {
 export function delConfig(configId) {
   return request({
     url: '/system/config/' + configId,
-    method: 'delete'
+    method: 'post'
   })
 }
 
@@ -55,6 +55,6 @@ export function delConfig(configId) {
 export function refreshCache() {
   return request({
     url: '/system/config/refreshCache',
-    method: 'delete'
+    method: 'post'
   })
 }

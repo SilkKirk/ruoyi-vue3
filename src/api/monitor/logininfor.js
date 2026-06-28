@@ -13,7 +13,7 @@ export function list(query) {
 export function delLogininfor(infoId) {
   return request({
     url: '/monitor/logininfor/' + infoId,
-    method: 'delete'
+    method: 'post'
   })
 }
 
@@ -29,6 +29,6 @@ export function unlockLogininfor(userName) {
 export function cleanLogininfor() {
   return request({
     url: '/monitor/logininfor/clean',
-    method: 'delete'
+    method: 'post'
   })
 }

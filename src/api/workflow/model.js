@@ -38,7 +38,7 @@ export function addModel(data) {
 export function saveModel(data) {
   return request({
     url: '/workflow/model',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -47,7 +47,7 @@ export function saveModel(data) {
 export function delModel(modelId) {
   return request({
     url: '/workflow/model/' + modelId,
-    method: 'delete'
+    method: 'post'
   })
 }
 

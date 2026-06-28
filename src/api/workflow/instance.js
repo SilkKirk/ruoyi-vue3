@@ -22,7 +22,7 @@ export function startInstance(data) {
 export function stopInstance(instanceId, data) {
   return request({
     url: '/workflow/instance/stop/' + instanceId,
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -31,7 +31,7 @@ export function stopInstance(instanceId, data) {
 export function updateInstanceState(data) {
   return request({
     url: '/workflow/instance/updateState',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

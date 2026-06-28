@@ -13,6 +13,6 @@ export function list(query) {
 export function forceLogout(tokenId) {
   return request({
     url: '/monitor/online/' + tokenId,
-    method: 'delete'
+    method: 'post'
   })
 }

@@ -21,7 +21,7 @@ export function getDefinitionBpmnXml(definitionId) {
 export function updateDefinitionState(data) {
   return request({
     url: '/workflow/definition/updateState',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -30,6 +30,6 @@ export function updateDefinitionState(data) {
 export function delDefinition(definitionId) {
   return request({
     url: '/workflow/definition/' + definitionId,
-    method: 'delete'
+    method: 'post'
   })
 }

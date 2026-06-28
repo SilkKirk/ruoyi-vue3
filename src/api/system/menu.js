@@ -46,7 +46,7 @@ export function addMenu(data) {
 export function updateMenu(data) {
   return request({
     url: '/system/menu',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -55,7 +55,7 @@ export function updateMenu(data) {
 export function updateMenuSort(data) {
   return request({
     url: '/system/menu/updateSort',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -64,6 +64,6 @@ export function updateMenuSort(data) {
 export function delMenu(menuId) {
   return request({
     url: '/system/menu/' + menuId,
-    method: 'delete'
+    method: 'post'
   })
 }
