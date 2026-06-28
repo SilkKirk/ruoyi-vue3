@@ -19,16 +19,31 @@
 <script setup>
 import { getLeave } from '@/api/workflow/leave'
 import { useRoute } from 'vue-router'
+import { nextTick } from 'vue'
 
 const route = useRoute()
 const loading = ref(true)
 const data = ref(null)
 
+/** 通知父级窗口调整 iframe 高度 */
+function notifyHeight() {
+  nextTick(() => {
+    const h = document.body.scrollHeight
+    if (h > 100) {
+      window.parent.postMessage({ type: 'ruoyi-iframe-height', height: h }, '*')
+    }
+  })
+}
+
 if (route.params.id) {
   getLeave(route.params.id).then(res => {
     data.value = res.data || null
-  }).catch(() => {}).finally(() => { loading.value = false })
+  }).catch(() => { console.error('获取请假详情失败') }).finally(() => {
+    loading.value = false
+    notifyHeight()
+  })
 } else {
   loading.value = false
+  notifyHeight()
 }
 </script>

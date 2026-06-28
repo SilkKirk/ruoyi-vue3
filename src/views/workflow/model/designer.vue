@@ -55,20 +55,46 @@ function createTranslate() {
   }
 }
 
+/** 将元素节点上的 oldPrefix: 属性批量改为 newPrefix: */
+function renamePrefixedAttributes(el, oldPrefix, newPrefix) {
+  for (let j = el.attributes.length - 1; j >= 0; j--) {
+    const attr = el.attributes[j]
+    if (attr.name.startsWith(oldPrefix + ':')) {
+      el.setAttribute(newPrefix + ':' + attr.name.slice(oldPrefix.length + 1), attr.value)
+      el.removeAttribute(attr.name)
+    }
+  }
+}
+
 /** 导入时将 flowable: 转为 camunda:（Camunda 面板才能读取） */
 function toCamundaXml(xml) {
   if (!xml) return xml
-  return xml
-    .replace(/xmlns:flowable="http:\/\/flowable\.org\/bpmn"/g, 'xmlns:camunda="http://camunda.org/schema/1.0/bpmn"')
-    .replace(/flowable:([a-zA-Z]+)/g, 'camunda:$1')
+  const doc = new DOMParser().parseFromString(xml, 'application/xml')
+  const root = doc.documentElement
+  root.removeAttribute('xmlns:flowable')
+  root.setAttribute('xmlns:camunda', 'http://camunda.org/schema/1.0/bpmn')
+  // 遍历所有元素节点，重命名属性前缀
+  const iter = doc.createNodeIterator(doc, NodeFilter.SHOW_ELEMENT, null)
+  let el
+  while ((el = iter.nextNode())) {
+    renamePrefixedAttributes(el, 'flowable', 'camunda')
+  }
+  return new XMLSerializer().serializeToString(doc)
 }
 
 /** 保存时将 camunda: 转为 flowable:（Flowable 引擎才能识别） */
 function toFlowableXml(xml) {
   if (!xml) return xml
-  return xml
-    .replace(/xmlns:camunda="http:\/\/camunda\.org\/schema\/1\.0\/bpmn"/g, 'xmlns:flowable="http://flowable.org/bpmn"')
-    .replace(/camunda:([a-zA-Z]+)/g, 'flowable:$1')
+  const doc = new DOMParser().parseFromString(xml, 'application/xml')
+  const root = doc.documentElement
+  root.removeAttribute('xmlns:camunda')
+  root.setAttribute('xmlns:flowable', 'http://flowable.org/bpmn')
+  const iter = doc.createNodeIterator(doc, NodeFilter.SHOW_ELEMENT, null)
+  let el
+  while ((el = iter.nextNode())) {
+    renamePrefixedAttributes(el, 'camunda', 'flowable')
+  }
+  return new XMLSerializer().serializeToString(doc)
 }
 
 const route = useRoute()

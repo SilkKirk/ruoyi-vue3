@@ -7,13 +7,11 @@ const baseUrl = 'http://localhost:8080' // 后端接口
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd())
-  const { VITE_APP_ENV } = env
+  const isBuild = command === 'build'
   return {
-    // 部署生产环境和开发环境下的URL。
-    // 默认情况下，vite 会假设你的应用是被部署在一个域名的根路径上
-    // 例如 https://www.ruoyi.vip/。如果应用被部署在一个子路径上，你就需要用这个选项指定这个子路径。例如，如果你的应用被部署在 https://www.ruoyi.vip/admin/，则设置 baseUrl 为 /admin/。
-    base: VITE_APP_ENV === 'production' ? '/' : '/',
-    plugins: createVitePlugins(env, command === 'build'),
+    // 部署基础路径（如需子路径部署改为 /子路径/）
+    base: '/',
+    plugins: createVitePlugins(env, isBuild),
     resolve: {
       // https://cn.vitejs.dev/config/#resolve-alias
       alias: {
@@ -28,15 +26,38 @@ export default defineConfig(({ mode, command }) => {
     // 打包配置
     build: {
       // https://vite.dev/config/build-options.html
-      sourcemap: command === 'build' ? false : 'inline',
+      sourcemap: isBuild ? false : 'inline',
       outDir: 'dist',
       assetsDir: 'assets',
-      chunkSizeWarningLimit: 2000,
+      chunkSizeWarningLimit: 500,
       rollupOptions: {
         output: {
           chunkFileNames: 'static/js/[name]-[hash].js',
           entryFileNames: 'static/js/[name]-[hash].js',
-          assetFileNames: 'static/[ext]/[name]-[hash].[ext]'
+          assetFileNames: 'static/[ext]/[name]-[hash].[ext]',
+          // 将大体积的第三方库拆分为独立 chunk，利用浏览器缓存
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              // element-plus + 图标库
+              if (id.includes('element-plus') || id.includes('@element-plus') || id.includes('@popperjs')) {
+                return 'vendor-element'
+              }
+              // echarts
+              if (id.includes('echarts')) {
+                return 'vendor-echarts'
+              }
+              // bpmn-js 流程设计器
+              if (id.includes('bpmn-js') || id.includes('diagram-js') || id.includes('@bpmn-io')) {
+                return 'vendor-bpmn'
+              }
+              // vue 全家桶 + pinia + vue-router
+              if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router')) {
+                return 'vendor-vue'
+              }
+              // 其他所有 node_modules 归入公共 vendor
+              return 'vendor'
+            }
+          }
         }
       }
     },

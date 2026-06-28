@@ -5,6 +5,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 **/*.log
+*.jar
 
 tests/**/coverage/
 tests/e2e/reports
@@ -19,5 +20,6 @@ selenium-debug.log
 *.sln
 *.local
 
-package-lock.json
+# 注意：package-lock.json 应提交以保证确定性安装，不要排除
+# package-lock.json
 yarn.lock

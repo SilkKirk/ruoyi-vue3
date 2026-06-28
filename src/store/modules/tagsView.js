@@ -9,12 +9,22 @@ function isPersistEnabled() {
 
 function saveVisitedViews(views) {
   if (!isPersistEnabled()) return
-  const toSave = views.filter(v => !(v.meta && v.meta.affix)).map(v => ({ path: v.path, fullPath: v.fullPath, name: v.name, title: v.title, query: v.query, meta: v.meta }))
+  // 持久化时只存必要字段，避免路由结构变化后反序列化兼容问题
+  const toSave = views.filter(v => !(v.meta && v.meta.affix)).map(v => ({ path: v.path, name: v.name, title: v.title }))
   cache.local.setJSON(PERSIST_KEY, toSave)
 }
 
 function loadVisitedViews() {
-  return cache.local.getJSON(PERSIST_KEY) || []
+  // 从 localStorage 恢复时补齐缺失字段
+  const saved = cache.local.getJSON(PERSIST_KEY) || []
+  return saved.map(v => ({
+    path: v.path,
+    fullPath: v.path,
+    name: v.name,
+    title: v.title,
+    query: {},
+    meta: { title: v.title, noCache: true }
+  }))
 }
 
 function clearVisitedViews() {

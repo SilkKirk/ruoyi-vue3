@@ -47,14 +47,6 @@ export const constantRoutes = [
     component: () => import('@/views/register'),
     hidden: true
   },
-  // 工作流设计器（放在 404 前面确保优先匹配）
-  {
-    path: '/workflow/designer/index/:modelId(.*)',
-    component: () => import('@/views/workflow/model/designer'),
-    name: 'WorkflowDesigner',
-    hidden: true,
-    meta: { title: '流程设计器' }
-  },
   // 业务详情（供待办/已办 iframe 嵌入）
   {
     path: '/workflow/leave/detail/:id(.*)',

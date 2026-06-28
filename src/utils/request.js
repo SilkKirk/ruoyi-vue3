@@ -50,9 +50,10 @@ service.interceptors.request.use(config => {
       console.warn(`[${config.url}]: ` + '请求数据大小超出允许的5M限制，无法进行防重复提交验证。')
       return config
     }
-    const sessionObj = cache.session.getJSON('sessionObj')
+    const sessionKey = 'sessionObj_' + config.url
+    const sessionObj = cache.session.getJSON(sessionKey)
     if (sessionObj === undefined || sessionObj === null || sessionObj === '') {
-      cache.session.setJSON('sessionObj', requestObj)
+      cache.session.setJSON(sessionKey, requestObj)
     } else {
       const s_url = sessionObj.url                // 请求地址
       const s_data = sessionObj.data              // 请求数据
@@ -62,7 +63,7 @@ service.interceptors.request.use(config => {
         console.warn(`[${s_url}]: ` + message)
         return Promise.reject(new Error(message))
       } else {
-        cache.session.setJSON('sessionObj', requestObj)
+        cache.session.setJSON(sessionKey, requestObj)
       }
     }
   }

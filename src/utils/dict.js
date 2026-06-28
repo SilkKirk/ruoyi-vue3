@@ -16,6 +16,8 @@ export function useDict(...args) {
         getDicts(dictType).then(resp => {
           res.value[dictType] = resp.data.map(p => ({ label: p.dictLabel, value: p.dictValue, elTagType: p.listClass, elTagClass: p.cssClass }))
           useDictStore().setDict(dictType, res.value[dictType])
+        }).catch(() => {
+          console.error('获取字典数据失败:', dictType)
         })
       }
     })

@@ -27,7 +27,7 @@
       <el-table-column label="实例ID" align="center" prop="instanceId" width="180" />
       <el-table-column label="流程名称" align="center" prop="processName" />
       <el-table-column label="业务Key" align="center" prop="businessKey" width="150" />
-      <el-table-column label="发起人" align="center" prop="startUserId" width="100" />
+      <el-table-column label="发起人" align="center" prop="startUserName" width="100" />
       <el-table-column label="发起时间" align="center" prop="startTime" width="160" />
       <el-table-column label="状态" align="center" width="100">
         <template #default="scope">

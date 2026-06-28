@@ -31,6 +31,7 @@
         </template>
       </el-table-column>
       <el-table-column label="部署ID" align="center" prop="deploymentId" width="180" />
+      <el-table-column label="部署时间" align="center" prop="deployTime" width="160" />
       <el-table-column label="操作" align="center" width="200">
         <template #default="scope">
           <el-button link type="primary" @click="handleViewDiagram(scope.row)" v-hasPermi="['workflow:definition:query']">流程图</el-button>

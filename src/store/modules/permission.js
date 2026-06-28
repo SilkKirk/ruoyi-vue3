@@ -33,27 +33,44 @@ const usePermissionStore = defineStore(
         this.sidebarRouters = routes
       },
       generateRoutes(roles) {
+        const store = this
         return new Promise(resolve => {
+          // 尝试从 sessionStorage 读取缓存的路由
+          const cached = sessionStorage.getItem('router-routes')
+          if (cached) {
+            try {
+              const res = { data: JSON.parse(cached) }
+              processRoutes(store, res, resolve)
+              return
+            } catch(e) { /* 缓存损坏，重新请求 */ }
+          }
           // 向后端请求路由数据
           getRouters().then(res => {
-            const sdata = JSON.parse(JSON.stringify(res.data))
-            const rdata = JSON.parse(JSON.stringify(res.data))
-            const defaultData = JSON.parse(JSON.stringify(res.data))
-            const sidebarRoutes = filterAsyncRouter(sdata)
-            const rewriteRoutes = filterAsyncRouter(rdata, false, true)
-            const defaultRoutes = filterAsyncRouter(defaultData)
-            const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
-            asyncRoutes.forEach(route => { router.addRoute(route) })
-            this.setRoutes(rewriteRoutes)
-            this.setSidebarRouters(constantRoutes.concat(sidebarRoutes))
-            this.setDefaultRoutes(sidebarRoutes)
-            this.setTopbarRoutes(defaultRoutes)
-            resolve(rewriteRoutes)
+            // 缓存到 sessionStorage（页面关闭后自动清除）
+            sessionStorage.setItem('router-routes', JSON.stringify(res.data))
+            processRoutes(store, res, resolve)
           })
         })
       }
     }
   })
+
+/** 处理路由数据的公共逻辑 */
+function processRoutes(store, res, resolve) {
+  const sdata = JSON.parse(JSON.stringify(res.data))
+  const rdata = JSON.parse(JSON.stringify(res.data))
+  const defaultData = JSON.parse(JSON.stringify(res.data))
+  const sidebarRoutes = filterAsyncRouter(sdata)
+  const rewriteRoutes = filterAsyncRouter(rdata, false, true)
+  const defaultRoutes = filterAsyncRouter(defaultData)
+  const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
+  asyncRoutes.forEach(route => { router.addRoute(route) })
+  store.setRoutes(rewriteRoutes)
+  store.setSidebarRouters(constantRoutes.concat(sidebarRoutes))
+  store.setDefaultRoutes(sidebarRoutes)
+  store.setTopbarRoutes(defaultRoutes)
+  resolve(rewriteRoutes)
+}
 
 // 遍历后台传来的路由字符串，转换为组件对象
 function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
