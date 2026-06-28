@@ -37,7 +37,7 @@ export function addConfig(data) {
 // 修改参数配置
 export function updateConfig(data) {
   return request({
-    url: '/system/config',
+    url: '/system/config/edit',
     method: 'post',
     data: data
   })

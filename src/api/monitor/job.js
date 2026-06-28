@@ -29,7 +29,7 @@ export function addJob(data) {
 // 修改定时任务调度
 export function updateJob(data) {
   return request({
-    url: '/monitor/job',
+    url: '/monitor/job/edit',
     method: 'post',
     data: data
   })

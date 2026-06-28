@@ -37,7 +37,7 @@ export function addModel(data) {
 // 保存模型BPMN XML
 export function saveModel(data) {
   return request({
-    url: '/workflow/model',
+    url: '/workflow/model/edit',
     method: 'post',
     data: data
   })

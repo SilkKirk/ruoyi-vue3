@@ -29,7 +29,7 @@ export function addNotice(data) {
 // 修改公告
 export function updateNotice(data) {
   return request({
-    url: '/system/notice',
+    url: '/system/notice/edit',
     method: 'post',
     data: data
   })

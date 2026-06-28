@@ -13,7 +13,7 @@ export function addLeave(data) {
 }
 
 export function updateLeave(data) {
-  return request({ url: '/workflow/leave', method: 'post', data: data })
+  return request({ url: '/workflow/leave/edit', method: 'post', data: data })
 }
 
 export function delLeave(id) {
