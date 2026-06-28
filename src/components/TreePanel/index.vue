@@ -285,7 +285,7 @@ const getSavedWidth = () => {
       }
     }
   } catch (error) {
-    console.warn(`Failed to load sidebar width from storage with key ${props.storageKey}:`, error)
+    
   }
   return null
 }
@@ -296,7 +296,7 @@ const saveWidthToStorage = () => {
   try {
     localStorage.setItem(props.storageKey, sidebarWidth.value.toString())
   } catch (error) {
-    console.warn(`Failed to save sidebar width to storage with key ${props.storageKey}:`, error)
+    
   }
 }
 

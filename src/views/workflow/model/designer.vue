@@ -166,11 +166,9 @@ async function loadBpmn(modeler) {
   try {
     const res = await getModelBpmnXml(modelId.value)
     let xml = res.data || res.msg || ''
-    console.log('加载XML:', xml ? xml.substring(0,200) : '空')
     if (xml && xml.indexOf('<userTask') !== -1) {
       // 有用户任务，使用后端XML
       const camundaXml = toCamundaXml(xml)
-      console.log('转换后:', camundaXml ? camundaXml.substring(0,200) : '空')
       // 缺少BPMNDiagram时自动补全
       let finalXml = camundaXml
       if (finalXml.indexOf('BPMNDiagram') === -1) {
@@ -201,7 +199,6 @@ async function loadBpmn(modeler) {
             </bpmndi:BPMNPlane>
           </bpmndi:BPMNDiagram>
         </definitions>`
-        console.log('已替换为完整模板（无BPMNDiagram）')
       }
       await modeler.importXML(finalXml)
       refreshNodeList()
@@ -247,8 +244,6 @@ async function handleSave() {
   try {
     const { xml } = await bpmnModeler.value.saveXML({ format: true })
     const flowableXml = toFlowableXml(xml)
-    console.log('保存XML(原始):', xml.substring(0,200))
-    console.log('保存XML(转换后):', flowableXml.substring(0,200))
     await saveModel({ modelId: modelId.value, bpmnXml: flowableXml })
     ElMessage.success('保存成功')
   } catch (err) {

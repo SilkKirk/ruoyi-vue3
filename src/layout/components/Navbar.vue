@@ -167,7 +167,7 @@ async function toggleTheme(event) {
     )
     await transition.finished
   } catch (error) {
-    console.warn("View transition failed, falling back to immediate toggle:", error)
+    
     settingsStore.toggleTheme()
   }
 }
