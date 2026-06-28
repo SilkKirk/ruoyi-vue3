@@ -126,8 +126,7 @@
           <el-button icon="Refresh" @click="resetTransferQuery">重置</el-button>
         </el-form-item>
       </el-form>
-      <el-table ref="transferUserTableRef" :data="transferUserList" @selection-change="handleTransferSelectionChange" height="280px" border>
-        <el-table-column type="radio" width="50" />
+      <el-table ref="transferUserTableRef" :data="transferUserList" highlight-current-row @row-click="handleTransferRowClick" height="280px" border>
         <el-table-column label="用户名称" prop="userName" :show-overflow-tooltip="true" />
         <el-table-column label="用户昵称" prop="nickName" :show-overflow-tooltip="true" />
         <el-table-column label="邮箱" prop="email" :show-overflow-tooltip="true" />
@@ -285,13 +284,13 @@ function getTransferUserList() {
 }
 function handleTransferQuery() { transferQueryParams.pageNum = 1; getTransferUserList() }
 function resetTransferQuery() { proxy.resetForm('transferQueryRef'); handleTransferQuery() }
-function handleTransferSelectionChange(selection) {
-  transferSelectedUser.value = selection.length > 0 ? selection[0] : null
+function handleTransferRowClick(row) {
+  transferSelectedUser.value = row
 }
 
 function submitTransfer() {
   if (!transferSelectedUser.value) { proxy.$modal.msgWarning('请选择一个用户'); return }
-  transferTask({ taskId: currentTask.value.taskId, transferUserId: transferSelectedUser.value.userId })
+  transferTask({ taskId: currentTask.value.taskId, transferUserId: transferSelectedUser.value.userName })
     .then(() => { proxy.$modal.msgSuccess('转办成功'); transferOpen.value = false; getList() }).catch(() => { proxy.$modal.msgError('转办失败') })
 }
 

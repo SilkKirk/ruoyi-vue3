@@ -35,19 +35,8 @@ const usePermissionStore = defineStore(
       generateRoutes(roles) {
         const store = this
         return new Promise(resolve => {
-          // 尝试从 sessionStorage 读取缓存的路由
-          const cached = sessionStorage.getItem('router-routes')
-          if (cached) {
-            try {
-              const res = { data: JSON.parse(cached) }
-              processRoutes(store, res, resolve)
-              return
-            } catch(e) { /* 缓存损坏，重新请求 */ }
-          }
-          // 向后端请求路由数据
+          // 每次重新获取路由（不缓存），确保权限变更立即生效
           getRouters().then(res => {
-            // 缓存到 sessionStorage（页面关闭后自动清除）
-            sessionStorage.setItem('router-routes', JSON.stringify(res.data))
             processRoutes(store, res, resolve)
           })
         })
