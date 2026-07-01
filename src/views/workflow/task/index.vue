@@ -28,7 +28,12 @@
       <el-table-column label="流程名称" align="center" prop="processName" min-width="120" />
       <el-table-column label="业务摘要" align="center" prop="businessSummary" min-width="160" />
       <el-table-column label="业务Key" align="center" prop="businessKey" min-width="120" v-if="false" />
-      <el-table-column label="办理人" align="center" prop="assignee" min-width="80" />
+      <el-table-column label="办理人" align="center" min-width="100">
+        <template #default="scope">
+          {{ scope.row.assigneeName || scope.row.assignee }}
+        </template>
+      </el-table-column>
+      <el-table-column label="部门" align="center" prop="deptName" min-width="100" />
       <el-table-column label="创建时间" align="center" min-width="155">
         <template #default="scope">{{ formatTime(scope.row.createTime) }}</template>
       </el-table-column>
@@ -85,8 +90,10 @@
                       </span>
                       <div class="tl-card__info">
                         <div class="tl-card__title">{{ item.taskName }}</div>
-                        <div class="tl-card__subtitle" v-if="item.assignee">
-                          <el-icon><UserFilled /></el-icon> {{ item.assignee }}
+                        <div class="tl-card__subtitle" v-if="item.assigneeName || item.assignee">
+                          <el-icon><UserFilled /></el-icon>
+                          <span :title="item.assignee ? '登录名: ' + item.assignee : ''">{{ item.assigneeName || item.assignee }}</span>
+                          <span v-if="item.assigneeDeptName" style="color:#909399;margin-left:2px">({{ item.assigneeDeptName }})</span>
                           <span v-if="item.duration" class="tl-card__dur">
                             · {{ formatDuration(item.duration) }}
                           </span>

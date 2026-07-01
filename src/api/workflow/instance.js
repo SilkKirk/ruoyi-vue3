@@ -9,6 +9,15 @@ export function listInstance(query) {
   })
 }
 
+// 查询我的流程列表
+export function listMyInstance(query) {
+  return request({
+    url: '/workflow/instance/myList',
+    method: 'get',
+    params: query
+  })
+}
+
 // 启动流程实例
 export function startInstance(data) {
   return request({
