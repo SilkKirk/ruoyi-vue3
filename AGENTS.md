@@ -2,7 +2,7 @@
 
 ## 技术栈
 
-Vue 3 + Vite 8 + Element Plus 2.14 + Pinia + Vue Router 4 + bpmn-js 流程设计器。
+Vue 3 + Vite 8 + Element Plus 2.14 + Pinia + Vue Router 5 + bpmn-js 流程设计器。
 
 ## 常用命令
 

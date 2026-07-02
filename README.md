@@ -26,7 +26,7 @@
 | **构建工具**    | Vite 8                 |
 | **UI 组件库**   | Element Plus           |
 | **状态管理**    | Pinia                  |
-| **路由管理**    | Vue Router 4           |
+| **路由管理**    | Vue Router 5           |
 | **工作流设计器**| bpmn-js                |
 
 ## 前端运行
