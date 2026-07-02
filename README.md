@@ -13,7 +13,7 @@
 
 * 本仓库为基于 [RuoYi-Vue3](https://gitcode.com/yangzongzhuan/RuoYi-Vue3) 的定制分支，在官方基础上进行了以下增强：
 * **工作流集成**：集成 **bpmn-js** 流程设计器，配套 Flowable 后端工作流引擎，支持在线流程绘制与审批。
-* **构建工具**：升级至 **Vite 6**，开发体验与构建性能更优。
+* **构建工具**：升级至 **Vite 8**，开发体验与构建性能更优。
 * **Docker 部署**：提供 Dockerfile + Nginx 配置，支持容器化部署。
 * 配套后端代码仓库地址 [ruoyi-vue-backend](https://github.com/SilkKirk/ruoyi-vue-backend)（MyBatis-Flex + Flowable 工作流）。
 
@@ -23,7 +23,7 @@
 | :-------------- | :--------------------- |
 | **前端框架**    | Vue 3                  |
 | **脚本语言**    | JavaScript             |
-| **构建工具**    | Vite 6                 |
+| **构建工具**    | Vite 8                 |
 | **UI 组件库**   | Element Plus           |
 | **状态管理**    | Pinia                  |
 | **路由管理**    | Vue Router 4           |
