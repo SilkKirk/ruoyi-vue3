@@ -46,7 +46,10 @@
       </el-table-column>
       <el-table-column label="操作" align="center" min-width="160">
         <template #default="scope">
-          <el-button link type="primary" @click="handleApprove(scope.row)">
+          <el-button v-if="scope.row.status === 'Rejected'" link type="primary" @click="handleEdit(scope.row)">
+            修改
+          </el-button>
+          <el-button v-else link type="primary" @click="handleApprove(scope.row)">
             {{ activeTab === 'todo' ? '审批' : '详情' }}
           </el-button>
           <el-button v-if="activeTab === 'todo'" link type="primary" @click="handleTransfer(scope.row)">
@@ -63,10 +66,10 @@
       <el-tabs v-model="approveTab" v-if="currentTask">
         <el-tab-pane label="业务数据" name="business">
           <div v-if="currentTask?.detailRoute" style="margin-top:10px">
-            <iframe ref="detailFrame" :src="currentTask.detailRoute + currentTask.businessKey" style="width:100%;min-height:350px;border:1px solid #e8e8e8;border-radius:4px" @load="onFrameLoad"></iframe>
+            <iframe ref="detailFrame" :src="getDetailUrl(currentTask)" style="width:100%;min-height:350px;border:1px solid #e8e8e8;border-radius:4px" @load="onFrameLoad"></iframe>
           </div>
-          <el-divider v-if="activeTab === 'todo'" />
-          <el-form v-if="activeTab === 'todo'" ref="approveRef" :model="approveForm" label-width="80px">
+          <el-divider v-if="activeTab === 'todo' && currentTask?.status !== 'Rejected'" />
+          <el-form v-if="activeTab === 'todo' && currentTask?.status !== 'Rejected'" ref="approveRef" :model="approveForm" label-width="80px">
             <el-form-item label="审批意见"><el-input v-model="approveForm.comment" type="textarea" :rows="3" placeholder="请输入审批意见" /></el-form-item>
           </el-form>
         </el-tab-pane>
@@ -84,8 +87,8 @@
                       <span :class="['tl-badge', badgeClass(item)]">
                         <el-icon v-if="item.type === 'start'"><Pointer /></el-icon>
                         <el-icon v-else-if="item.type === 'end'"><CircleCheckFilled /></el-icon>
-                        <el-icon v-else-if="item.approved === true"><Select /></el-icon>
-                        <el-icon v-else-if="item.approved === false"><CloseBold /></el-icon>
+                        <el-icon v-else-if="item.approved === 0"><Select /></el-icon>
+                        <el-icon v-else-if="item.approved === 1"><CloseBold /></el-icon>
                         <el-icon v-else><Timer /></el-icon>
                       </span>
                       <div class="tl-card__info">
@@ -114,7 +117,10 @@
         </el-tab-pane>
       </el-tabs>
       <template #footer>
-        <template v-if="activeTab === 'todo'">
+        <template v-if="activeTab === 'todo' && currentTask?.status === 'Rejected'">
+          <el-button type="primary" @click="triggerModifySubmit" :loading="modifySubmitting">提交修改</el-button>
+        </template>
+        <template v-else-if="activeTab === 'todo'">
           <el-button type="success" @click="submitApprove" :loading="submitting">通 过</el-button>
           <el-button type="warning" @click="submitReject" :loading="submitting">驳 回</el-button>
         </template>
@@ -172,6 +178,7 @@ const approveTab = ref('business')
 const businessData = ref(null)
 const historyList = ref([])
 const submitting = ref(false)
+const modifySubmitting = ref(false)
 const transferOpen = ref(false)
 const transferUserList = ref([])
 const transferTotal = ref(0)
@@ -191,12 +198,17 @@ function onFrameLoad() {
   } catch(e) { /* 跨域静默失败 */ }
 }
 
-// 监听 iframe 子页面发来的高度消息
+// 监听 iframe 子页面发来的消息
 window.addEventListener('message', (e) => {
   const f = detailFrame.value
   if (!f) return
   if (e.data?.type === 'ruoyi-iframe-height' && e.data.height > 200) {
     f.style.height = e.data.height + 'px'
+  }
+  if (e.data?.type === 'ruoyi-task-completed') {
+    modifySubmitting.value = false
+    approveOpen.value = false
+    getList()
   }
 })
 
@@ -213,8 +225,8 @@ function formatTime(t) {
 function dotClass(item) {
   if (item.type === 'start') return 'tl-dot--start'
   if (item.type === 'end') return 'tl-dot--end'
-  if (item.approved === true) return 'tl-dot--ok'
-  if (item.approved === false) return 'tl-dot--no'
+  if (item.approved === 0) return 'tl-dot--ok'
+  if (item.approved === 1) return 'tl-dot--no'
   return 'tl-dot--wait'
 }
 
@@ -222,8 +234,8 @@ function dotClass(item) {
 function badgeClass(item) {
   if (item.type === 'start') return 'tl-badge--start'
   if (item.type === 'end') return 'tl-badge--end'
-  if (item.approved === true) return 'tl-badge--ok'
-  if (item.approved === false) return 'tl-badge--no'
+  if (item.approved === 0) return 'tl-badge--ok'
+  if (item.approved === 1) return 'tl-badge--no'
   return 'tl-badge--wait'
 }
 
@@ -249,6 +261,14 @@ function getList() {
 function handleQuery() { queryParams.value.pageNum = 1; getList() }
 function resetQuery() { proxy.resetForm('queryRef'); handleQuery() }
 
+function getDetailUrl(task) {
+  let url = task.detailRoute + task.businessKey
+  if (task.status === 'Rejected') {
+    url += '?edit=1&taskId=' + task.taskId
+  }
+  return url
+}
+
 function handleApprove(row) {
   currentTask.value = row
   approveForm.value.comment = ''
@@ -258,9 +278,24 @@ function handleApprove(row) {
   getTaskHistory(row.instanceId).then(res => { historyList.value = res.data || [] }).catch(() => { proxy.$modal.msgError('获取审批历史失败') })
 }
 
+function handleEdit(row) {
+  currentTask.value = row
+  approveTab.value = 'business'
+  approveOpen.value = true
+  historyList.value = []
+  getTaskHistory(row.instanceId).then(res => { historyList.value = res.data || [] }).catch(() => {})
+}
+
+function triggerModifySubmit() {
+  modifySubmitting.value = true
+  detailFrame.value?.contentWindow?.postMessage({ type: 'ruoyi-task-submit' }, '*')
+  // 重置 loading：iframe 提交完成后通过 ruoyi-task-completed 关闭
+  setTimeout(() => { modifySubmitting.value = false }, 5000)
+}
+
 function submitApprove() {
   submitting.value = true
-  completeTask({ taskId: currentTask.value.taskId, comment: approveForm.value.comment, variables: { approved: true } })
+  completeTask({ taskId: currentTask.value.taskId, comment: approveForm.value.comment, variables: { approved: 0 } })
     .then(() => { proxy.$modal.msgSuccess('审批通过'); approveOpen.value = false; getList() })
     .finally(() => { submitting.value = false })
 }

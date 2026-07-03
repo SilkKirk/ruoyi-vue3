@@ -42,6 +42,7 @@ import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatfor
 import camundaModdle from 'camunda-bpmn-moddle/resources/camunda'
 import '@bpmn-io/properties-panel/assets/properties-panel.css'
 import translations from './translations'
+import CustomPaletteProvider from './CustomPaletteProvider'
 import 'bpmn-js/dist/assets/diagram-js.css'
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css'
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css'
@@ -147,7 +148,8 @@ async function initModeler() {
         BpmnPropertiesPanelModule,
         BpmnPropertiesProviderModule,
         CamundaPlatformPropertiesProviderModule,
-        { translate: ['value', createTranslate()] }
+        { translate: ['value', createTranslate()] },
+        { __init__: ['customPaletteProvider'], customPaletteProvider: ['type', CustomPaletteProvider] }
       ],
       moddleExtensions: { camunda: camundaModdle }
     })

@@ -19,7 +19,3 @@ export function updateLeave(data) {
 export function delLeave(id) {
   return request({ url: '/workflow/leave/' + id, method: 'post' })
 }
-
-export function submitLeave(data) {
-  return request({ url: '/workflow/leave/submit', method: 'post', data: data })
-}

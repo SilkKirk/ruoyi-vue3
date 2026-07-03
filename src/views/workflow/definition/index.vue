@@ -106,6 +106,25 @@ function handleViewDiagram(row) {
   }, 300)
 }
 
+function handleUpdateState(row, state) {
+  const label = state === 1 ? '挂起' : '激活'
+  proxy.$modal.confirm('确认' + label + '该流程定义吗？').then(() => {
+    return updateDefinitionState({ definitionId: row.definitionId, state: state })
+  }).then(() => {
+    proxy.$modal.msgSuccess(label + '成功')
+    getList()
+  }).catch(() => {})
+}
+
+function handleDelete(row) {
+  proxy.$modal.confirm('确认删除该流程定义吗？\n注意：将级联删除该流程定义下的所有流程实例！').then(() => {
+    return delDefinition(row.definitionId)
+  }).then(() => {
+    proxy.$modal.msgSuccess('删除成功')
+    getList()
+  }).catch(() => {})
+}
+
 function destroyViewer() {
   if (bpmnViewer) { bpmnViewer.destroy(); bpmnViewer = null }
 }
