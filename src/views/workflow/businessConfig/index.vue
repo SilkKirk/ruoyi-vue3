@@ -106,15 +106,9 @@ function getList() {
 function handleQuery() { queryParams.value.pageNum = 1; getList() }
 function resetQuery() { proxy.resetForm('queryRef'); handleQuery() }
 
-function loadDropdownData() {
-  getProcessDefinitionKeys().then(res => { processDefinitionKeys.value = res.data || [] })
-  getHandlerBeanNames().then(res => { handlerBeanNames.value = res.data || [] })
-}
-
 function handleAdd() {
   form.value = { processDefinitionKey: '', businessName: '', detailRoute: '', serviceBeanName: '', status: '1', remark: '' }
   title.value = '新增业务配置'
-  loadDropdownData()
   open.value = true
 }
 
@@ -122,10 +116,13 @@ function handleEdit(row) {
   getConfig(row.id).then(res => {
     form.value = res.data || row
     title.value = '编辑业务配置'
-    loadDropdownData()
     open.value = true
   })
 }
+
+// 列表页加载时预缓存下拉数据，打开对话框直接复用
+getProcessDefinitionKeys().then(res => { processDefinitionKeys.value = res.data || [] })
+getHandlerBeanNames().then(res => { handlerBeanNames.value = res.data || [] })
 
 function handleFormSubmit() {
   proxy.$refs.formRef.validate(valid => {

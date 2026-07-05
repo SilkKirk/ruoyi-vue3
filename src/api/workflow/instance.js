@@ -44,11 +44,3 @@ export function updateInstanceState(data) {
     data: data
   })
 }
-
-// 获取流程图高亮跟踪
-export function getInstanceDiagram(instanceId) {
-  return request({
-    url: '/workflow/instance/diagram/' + instanceId,
-    method: 'get'
-  })
-}

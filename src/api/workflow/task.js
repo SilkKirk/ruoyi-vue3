@@ -45,14 +45,6 @@ export function transferTask(data) {
   })
 }
 
-// 获取任务流程图
-export function getTaskFlowChart(taskId) {
-  return request({
-    url: '/workflow/task/flowChart/' + taskId,
-    method: 'get'
-  })
-}
-
 // 获取审批历史
 export function getTaskHistory(instanceId) {
   return request({
@@ -62,9 +54,9 @@ export function getTaskHistory(instanceId) {
 }
 
 // 通用查询业务数据
-export function getBusinessData(businessType, businessId) {
+export function getBusinessData(businessCode, businessId) {
   return request({
-    url: '/workflow/task/businessData/' + businessType + '/' + businessId,
+    url: '/workflow/task/businessData/' + businessCode + '/' + businessId,
     method: 'get'
   })
 }

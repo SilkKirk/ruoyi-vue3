@@ -45,7 +45,7 @@
 import { getLeave, updateLeave } from '@/api/workflow/leave'
 import { completeTask } from '@/api/workflow/task'
 import { useRoute } from 'vue-router'
-import { nextTick } from 'vue'
+import { nextTick, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
@@ -102,9 +102,11 @@ async function submitModify() {
 }
 
 // 监听父窗口发来的提交指令
-window.addEventListener('message', (e) => {
+const onMessage = (e) => {
   if (e.data?.type === 'ruoyi-task-submit') {
     submitModify()
   }
-})
+}
+window.addEventListener('message', onMessage)
+onBeforeUnmount(() => window.removeEventListener('message', onMessage))
 </script>

@@ -44,18 +44,13 @@
 
     <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum" v-model:limit="queryParams.pageSize" @pagination="getList" />
 
-    <!-- 查看流程图对话框 -->
-    <el-dialog title="流程图" v-model="diagramOpen" width="80%" top="5vh" @closed="destroyViewer">
-      <div ref="diagramRef" class="diagram-canvas"></div>
-    </el-dialog>
+    <BpmnTrackDialog v-model="diagramOpen" :definition-id="currentDefinitionId" />
   </div>
 </template>
 
 <script setup name="WorkflowDefinition">
-import { listDefinition, getDefinitionBpmnXml, updateDefinitionState, delDefinition } from '@/api/workflow/definition'
-import Viewer from 'bpmn-js/lib/Viewer'
-import 'bpmn-js/dist/assets/diagram-js.css'
-import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css'
+import { listDefinition, updateDefinitionState, delDefinition } from '@/api/workflow/definition'
+import BpmnTrackDialog from '@/components/workflow/BpmnTrackDialog.vue'
 
 const { proxy } = getCurrentInstance()
 const definitionList = ref([])
@@ -63,8 +58,7 @@ const loading = ref(true)
 const showSearch = ref(true)
 const total = ref(0)
 const diagramOpen = ref(false)
-const diagramRef = ref(null)
-let bpmnViewer = null
+const currentDefinitionId = ref('')
 
 const queryParams = ref({
   pageNum: 1,
@@ -85,25 +79,8 @@ function handleQuery() { queryParams.value.pageNum = 1; getList() }
 function resetQuery() { proxy.resetForm('queryRef'); handleQuery() }
 
 function handleViewDiagram(row) {
+  currentDefinitionId.value = row.definitionId
   diagramOpen.value = true
-  // 延迟等待对话框渲染完成
-  setTimeout(async () => {
-    if (!diagramRef.value) return
-    try {
-      const res = await getDefinitionBpmnXml(row.definitionId)
-      const xml = res.data || res.msg || ''
-      if (!xml) { proxy.$modal.msgWarning('暂无流程图数据'); return }
-      const flowableXml = xml
-        .replace(/xmlns:flowable="http:\/\/flowable\.org\/bpmn"/g, 'xmlns:camunda="http://camunda.org/schema/1.0/bpmn"')
-        .replace(/flowable:([a-zA-Z]+)/g, 'camunda:$1')
-      bpmnViewer = new Viewer({ container: diagramRef.value })
-      await bpmnViewer.importXML(flowableXml)
-      bpmnViewer.get('canvas').zoom('fit-viewport')
-    } catch (err) {
-      console.error('加载流程图失败', err)
-      proxy.$modal.msgError('加载流程图失败')
-    }
-  }, 300)
 }
 
 function handleUpdateState(row, state) {
@@ -125,17 +102,6 @@ function handleDelete(row) {
   }).catch(() => {})
 }
 
-function destroyViewer() {
-  if (bpmnViewer) { bpmnViewer.destroy(); bpmnViewer = null }
-}
-
 getList()
 </script>
 
-<style scoped>
-.diagram-canvas {
-  width: 100%;
-  height: 600px;
-  border: 1px solid #e4e7ed;
-}
-</style>

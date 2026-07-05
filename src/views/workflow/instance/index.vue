@@ -65,18 +65,14 @@
       @pagination="getList"
     />
 
-    <!-- 流程图跟踪弹窗 -->
-    <el-dialog title="流程图跟踪" v-model="diagramOpen" width="700px" top="5vh" align-center>
-      <div v-loading="diagramLoading" style="text-align:center">
-        <img v-if="diagramImg" :src="'data:image/png;base64,' + diagramImg" style="max-width:100%;display:inline-block" />
-        <el-empty v-else description="暂无流程图" />
-      </div>
-    </el-dialog>
+    <BpmnTrackDialog v-model="diagramOpen" :instance-id="currentInstanceId" />
   </div>
 </template>
 
 <script setup name="WorkflowInstance">
-import { listInstance, updateInstanceState, stopInstance, getInstanceDiagram } from '@/api/workflow/instance'
+import { listInstance, updateInstanceState, stopInstance } from '@/api/workflow/instance'
+import BpmnTrackDialog from '@/components/workflow/BpmnTrackDialog.vue'
+import { statusType, statusLabel } from '@/utils/workflow'
 
 const { proxy } = getCurrentInstance()
 
@@ -85,8 +81,7 @@ const loading = ref(true)
 const showSearch = ref(true)
 const total = ref(0)
 const diagramOpen = ref(false)
-const diagramLoading = ref(false)
-const diagramImg = ref('')
+const currentInstanceId = ref('')
 
 const queryParams = ref({
   pageNum: 1,
@@ -113,24 +108,9 @@ function resetQuery() {
   handleQuery()
 }
 
-function statusType(status) {
-  const map = { RUNNING: 'primary', SUSPENDED: 'warning', COMPLETED: 'success', TERMINATED: 'danger' }
-  return map[status] || 'info'
-}
-
-function statusLabel(status) {
-  const map = { RUNNING: '运行中', SUSPENDED: '已挂起', COMPLETED: '已完成', TERMINATED: '已终止' }
-  return map[status] || status
-}
-
 function handleDiagram(row) {
+  currentInstanceId.value = row.instanceId
   diagramOpen.value = true
-  diagramLoading.value = true
-  getInstanceDiagram(row.instanceId).then(res => {
-    diagramImg.value = res.data
-  }).finally(() => {
-    diagramLoading.value = false
-  })
 }
 
 function handleUpdateState(row, state) {

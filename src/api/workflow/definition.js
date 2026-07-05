@@ -9,11 +9,12 @@ export function listDefinition(query) {
   })
 }
 
-// 获取流程定义BPMN XML
-export function getDefinitionBpmnXml(definitionId) {
+// 获取流程图数据（BPMN XML + 可选活动状态）
+export function getDiagramInfo(definitionId, instanceId) {
   return request({
-    url: '/workflow/definition/bpmnXml/' + definitionId,
-    method: 'get'
+    url: '/workflow/definition/diagramInfo',
+    method: 'get',
+    params: { definitionId, instanceId }
   })
 }
 

@@ -27,7 +27,6 @@
       <el-table-column label="任务/节点" align="center" prop="taskName" min-width="120" />
       <el-table-column label="流程名称" align="center" prop="processName" min-width="120" />
       <el-table-column label="业务摘要" align="center" prop="businessSummary" min-width="160" />
-      <el-table-column label="业务Key" align="center" prop="businessKey" min-width="120" v-if="false" />
       <el-table-column label="办理人" align="center" min-width="100">
         <template #default="scope">
           {{ scope.row.assigneeName || scope.row.assignee }}
@@ -46,7 +45,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center" min-width="160">
         <template #default="scope">
-          <el-button v-if="scope.row.status === 'Rejected'" link type="primary" @click="handleEdit(scope.row)">
+          <el-button v-if="scope.row.status === 'Rejected'" link type="primary" @click="handleApprove(scope.row, true)">
             修改
           </el-button>
           <el-button v-else link type="primary" @click="handleApprove(scope.row)">
@@ -74,46 +73,7 @@
           </el-form>
         </el-tab-pane>
         <el-tab-pane label="审批历史" name="history">
-          <div class="tl" style="margin-top:12px">
-            <div v-for="(item, idx) in historyList" :key="idx" class="tl-item">
-              <div class="tl-axis">
-                <div :class="['tl-dot', dotClass(item)]"></div>
-                <div v-if="idx < historyList.length - 1" class="tl-line"></div>
-              </div>
-              <div class="tl-body">
-                <div class="tl-card">
-                  <div class="tl-card__top">
-                    <div class="tl-card__left">
-                      <span :class="['tl-badge', badgeClass(item)]">
-                        <el-icon v-if="item.type === 'start'"><Pointer /></el-icon>
-                        <el-icon v-else-if="item.type === 'end'"><CircleCheckFilled /></el-icon>
-                        <el-icon v-else-if="item.approved === 0"><Select /></el-icon>
-                        <el-icon v-else-if="item.approved === 1"><CloseBold /></el-icon>
-                        <el-icon v-else><Timer /></el-icon>
-                      </span>
-                      <div class="tl-card__info">
-                        <div class="tl-card__title">{{ item.taskName }}</div>
-                        <div class="tl-card__subtitle" v-if="item.assigneeName || item.assignee">
-                          <el-icon><UserFilled /></el-icon>
-                          <span :title="item.assignee ? '登录名: ' + item.assignee : ''">{{ item.assigneeName || item.assignee }}</span>
-                          <span v-if="item.assigneeDeptName" style="color:#909399;margin-left:2px">({{ item.assigneeDeptName }})</span>
-                          <span v-if="item.duration" class="tl-card__dur">
-                            · {{ formatDuration(item.duration) }}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="tl-card__time">{{ formatTime(item.endTime || item.startTime) }}</div>
-                  </div>
-                  <div v-if="item.comment" class="tl-card__cmt">
-                    <el-icon><ChatDotSquare /></el-icon>
-                    <span>{{ item.comment }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <el-empty v-if="historyList.length === 0" description="暂无审批记录" :image-size="60" />
-          </div>
+          <ApprovalTimeline :history-list="historyList" />
         </el-tab-pane>
       </el-tabs>
       <template #footer>
@@ -157,7 +117,9 @@
 <script setup name="WorkflowTask">
 import { todoList, doneList, completeTask, rejectTask, transferTask, getTaskHistory } from '@/api/workflow/task'
 import { listUser } from '@/api/system/user'
-import { Pointer, CircleCheckFilled, Select, CloseBold, Timer, UserFilled, ChatDotSquare } from '@element-plus/icons-vue'
+import { formatTime } from '@/utils/workflow'
+import { useIframeBridge } from '@/utils/useIframeBridge'
+import ApprovalTimeline from '@/components/workflow/ApprovalTimeline.vue'
 import { useRoute } from 'vue-router'
 
 const props = defineProps({
@@ -175,7 +137,6 @@ const total = ref(0)
 const currentTask = ref(null)
 const approveOpen = ref(false)
 const approveTab = ref('business')
-const businessData = ref(null)
 const historyList = ref([])
 const submitting = ref(false)
 const modifySubmitting = ref(false)
@@ -188,67 +149,21 @@ const queryParams = ref({ pageNum: 1, pageSize: 10, taskName: undefined })
 const approveForm = ref({ comment: '' })
 const transferQueryParams = reactive({ pageNum: 1, pageSize: 10, userName: undefined })
 const detailFrame = ref(null)
+const { onFrameLoad } = useIframeBridge(detailFrame)
 
-/** iframe 加载完成后通过 postMessage 调整高度 */
-function onFrameLoad() {
-  const f = detailFrame.value
-  if (!f) return
-  try {
-    f.contentWindow.postMessage({ type: 'ruoyi-iframe-resize' }, '*')
-  } catch(e) { /* 跨域静默失败 */ }
-}
-
-// 监听 iframe 子页面发来的消息
-window.addEventListener('message', (e) => {
-  const f = detailFrame.value
-  if (!f) return
-  if (e.data?.type === 'ruoyi-iframe-height' && e.data.height > 200) {
-    f.style.height = e.data.height + 'px'
-  }
+// 额外监听 ruoyi-task-completed（task 页面特有）
+const onMessage = (e) => {
   if (e.data?.type === 'ruoyi-task-completed') {
     modifySubmitting.value = false
     approveOpen.value = false
     getList()
   }
-})
-
-
-/** 格式化时间（不含秒） */
-function formatTime(t) {
-  if (!t) return ''
-  const d = new Date(t)
-  const pad = n => String(n).padStart(2, '0')
-  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes())
 }
+window.addEventListener('message', onMessage)
+import { onBeforeUnmount } from 'vue'
+onBeforeUnmount(() => window.removeEventListener('message', onMessage))
 
-/** 时间轴圆点样式 */
-function dotClass(item) {
-  if (item.type === 'start') return 'tl-dot--start'
-  if (item.type === 'end') return 'tl-dot--end'
-  if (item.approved === 0) return 'tl-dot--ok'
-  if (item.approved === 1) return 'tl-dot--no'
-  return 'tl-dot--wait'
-}
 
-/** 状态徽标样式 */
-function badgeClass(item) {
-  if (item.type === 'start') return 'tl-badge--start'
-  if (item.type === 'end') return 'tl-badge--end'
-  if (item.approved === 0) return 'tl-badge--ok'
-  if (item.approved === 1) return 'tl-badge--no'
-  return 'tl-badge--wait'
-}
-
-/** 处理时长格式化（毫秒 → 可读） */
-function formatDuration(ms) {
-  if (!ms) return ''
-  const sec = Math.floor(ms / 1000)
-  if (sec < 60) return sec + '秒'
-  const min = Math.floor(sec / 60)
-  if (min < 60) return min + '分' + (sec % 60) + '秒'
-  const hour = Math.floor(min / 60)
-  return hour + '时' + (min % 60) + '分'
-}
 function getList() {
   loading.value = true
   const api = activeTab.value === 'todo' ? todoList : doneList
@@ -269,21 +184,13 @@ function getDetailUrl(task) {
   return url
 }
 
-function handleApprove(row) {
+function handleApprove(row, editMode = false) {
   currentTask.value = row
-  approveForm.value.comment = ''
+  if (!editMode) approveForm.value.comment = ''
   approveTab.value = 'business'
   approveOpen.value = true
   historyList.value = []
-  getTaskHistory(row.instanceId).then(res => { historyList.value = res.data || [] }).catch(() => { proxy.$modal.msgError('获取审批历史失败') })
-}
-
-function handleEdit(row) {
-  currentTask.value = row
-  approveTab.value = 'business'
-  approveOpen.value = true
-  historyList.value = []
-  getTaskHistory(row.instanceId).then(res => { historyList.value = res.data || [] }).catch(() => {})
+  getTaskHistory(row.instanceId).then(res => { historyList.value = res.data || [] }).catch(() => { editMode ? null : proxy.$modal.msgError('获取审批历史失败') })
 }
 
 function triggerModifySubmit() {
@@ -350,86 +257,6 @@ getList()
 :deep(.el-table__header-wrapper) {
   width: 100%;
 }
-
-/* ===== 审批历史时间轴 ===== */
-.tl { padding-left: 4px; }
-.tl-item { display: flex; gap: 16px; position: relative; }
-.tl-axis {
-  display: flex; flex-direction: column; align-items: center;
-  width: 20px; flex-shrink: 0;
-}
-.tl-dot {
-  width: 16px; height: 16px; border-radius: 50%;
-  z-index: 1; flex-shrink: 0;
-}
-.tl-dot--start { background: #409eff; box-shadow: 0 0 0 3px rgba(64,158,255,.2); }
-.tl-dot--ok    { background: #67c23a; box-shadow: 0 0 0 3px rgba(103,194,58,.2); }
-.tl-dot--no    { background: #f56c6c; box-shadow: 0 0 0 3px rgba(245,108,108,.2); }
-.tl-dot--wait  { background: #c0c4cc; }
-.tl-dot--end   { background: #e6a23c; box-shadow: 0 0 0 3px rgba(230,162,60,.2); }
-.tl-line {
-  width: 2px; flex: 1; min-height: 24px;
-  background: #e8e8e8;
-}
-.tl-body  { flex: 1; min-width: 0; }
-.tl-card {
-  background: #fff; border: 1px solid #ebeef5;
-  border-radius: 8px; padding: 12px 16px;
-  margin-bottom: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
-}
-.tl-card__top {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 12px;
-}
-.tl-card__left { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
-.tl-badge {
-  flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 16px; color: #fff;
-}
-.tl-badge--start { background: #409eff; }
-.tl-badge--ok    { background: #67c23a; }
-.tl-badge--no    { background: #f56c6c; }
-.tl-badge--wait  { background: #c0c4cc; }
-.tl-badge--end   { background: #e6a23c; }
-.tl-card__info { min-width: 0; }
-.tl-card__title {
-  font-size: 14px; font-weight: 600; color: #303133;
-  line-height: 1.4; word-break: break-word;
-}
-.tl-card__subtitle {
-  font-size: 12px; color: #909399; margin-top: 2px;
-  display: flex; align-items: center; gap: 2px;
-}
-.tl-card__subtitle .el-icon { vertical-align: -2px; }
-.tl-card__dur { color: #c0c4cc; }
-.tl-card__time {
-  flex-shrink: 0; font-size: 12px; color: #b0b3b8;
-  white-space: nowrap; padding-top: 2px;
-}
-.tl-card__cmt {
-  margin-top: 8px; padding: 8px 10px;
-  background: #f5f7fa; border-radius: 6px;
-  font-size: 13px; color: #606266; line-height: 1.5;
-}
-.tl-card__cmt .el-icon {
-  vertical-align: -2px; margin-right: 4px; color: #909399;
-}
-
-/* 暗黑模式 */
-html.dark .tl-card {
-  background: var(--el-bg-color-overlay);
-  border-color: var(--el-border-color-light);
-}
-html.dark .tl-card__cmt {
-  background: var(--el-fill-color-lighter);
-}
-html.dark .tl-line {
-  background: var(--el-border-color-light);
-}
-
-/* 审批对话框：内容过长时 body 内滚动，不撑页面 */
 :deep(.el-dialog__body) {
   max-height: 68vh;
   overflow-y: auto;
