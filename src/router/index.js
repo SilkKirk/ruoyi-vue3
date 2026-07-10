@@ -47,14 +47,6 @@ export const constantRoutes = [
     component: () => import('@/views/register'),
     hidden: true
   },
-  // 业务详情（供待办/已办 iframe 嵌入）
-  {
-    path: '/workflow/leave/detail/:id(.*)',
-    component: () => import('@/views/workflow/leave/detail'),
-    name: 'LeaveDetail',
-    hidden: true,
-    meta: { title: '请假详情' }
-  },
   {
     path: "/:pathMatch(.*)*",
     component: () => import('@/views/error/404'),

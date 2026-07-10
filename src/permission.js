@@ -1,4 +1,5 @@
 import router from './router'
+import request from '@/utils/request'
 import { ElMessage } from 'element-plus'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
@@ -38,6 +39,8 @@ router.beforeEach(async (to, from) => {
       NProgress.done()
       return { path: '/' }
     }
+    // 确保业务详情路由已注册（iframe 新实例也需要）
+    await registerBusinessRoutes()
     if (useUserStore().roles.length === 0) {
       isRelogin.show = true
       try {
@@ -74,3 +77,26 @@ router.beforeEach(async (to, from) => {
 router.afterEach(() => {
   NProgress.done()
 })
+
+const businessViews = import.meta.glob('@/views/**/*.vue')
+let businessRoutesRegistered = false
+async function registerBusinessRoutes() {
+  if (businessRoutesRegistered) return
+  businessRoutesRegistered = true
+  try {
+    const res = await request({ url: '/workflow/business/config/detailRoutes', method: 'get' })
+    ;(res.data || []).forEach(path => {
+      const cleanPath = path.replace(/\/+$/, '')
+      const compPath = '/src/views' + cleanPath + '.vue'
+      if (businessViews[compPath]) {
+        router.addRoute({
+          path: path + ':id(.*)',
+          component: businessViews[compPath],
+          hidden: true
+        })
+      }
+    })
+  } catch (e) {
+    businessRoutesRegistered = false
+  }
+}

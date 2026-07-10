@@ -126,20 +126,11 @@ export function param(json) {
  * @returns {Object}
  */
 export function param2Obj(url) {
-  const search = decodeURIComponent(url.split('?')[1]).replace(/\+/g, ' ')
-  if (!search) {
-    return {}
-  }
+  const params = new URLSearchParams(url.split('?')[1] || '')
   const obj = {}
-  const searchArr = search.split('&')
-  searchArr.forEach(v => {
-    const index = v.indexOf('=')
-    if (index !== -1) {
-      const name = v.substring(0, index)
-      const val = v.substring(index + 1, v.length)
-      obj[name] = val
-    }
-  })
+  for (const [key, value] of params) {
+    obj[key] = value
+  }
   return obj
 }
 
@@ -149,7 +140,7 @@ export function param2Obj(url) {
  */
 export function html2Text(val) {
   const div = document.createElement('div')
-  div.innerHTML = val
+  div.textContent = val
   return div.textContent || div.innerText
 }
 
@@ -284,9 +275,7 @@ export function uniqueArr(arr) {
  * @returns {string}
  */
 export function createUniqueString() {
-  const timestamp = +new Date() + ''
-  const randomNum = parseInt((1 + Math.random()) * 65536) + ''
-  return (+(randomNum + timestamp)).toString(32)
+  return crypto.randomUUID()
 }
 
 /**

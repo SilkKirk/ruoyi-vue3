@@ -95,24 +95,24 @@ export function selectDictLabels(datas, value, separator) {
   const actions = []
   const currentSeparator = undefined === separator ? "," : separator
   const temp = value.split(currentSeparator)
-  Object.keys(value.split(currentSeparator)).some((val) => {
+  temp.some((val) => {
     let match = false
     Object.keys(datas).some((key) => {
-      if (datas[key].value == ('' + temp[val])) {
+      if (datas[key].value == '' + val) {
         actions.push(datas[key].label + currentSeparator)
         match = true
       }
     })
     if (!match) {
-      actions.push(temp[val] + currentSeparator)
+      actions.push(val + currentSeparator)
     }
   })
   return actions.join('').substring(0, actions.join('').length - 1)
 }
 
 // 字符串格式化(%s )
-export function sprintf(str) {
-  let flag = true, i = 1
+export function sprintf(str, ...args) {
+  let flag = true, i = 0
   str = str.replace(/%s/g, function () {
     const arg = args[i++]
     if (typeof arg === 'undefined') {

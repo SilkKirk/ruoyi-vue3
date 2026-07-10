@@ -119,7 +119,8 @@ function handleSuccess(response) {
   isUploading.value = false
   selectedFile.value = null
   uploadRef.value?.clearFiles()
-  proxy.$alert("<div style='overflow:auto;overflow-x:hidden;max-height:70vh;padding:10px 20px 0;'>" + response.msg + '</div>', '导入结果', { dangerouslyUseHTMLString: true })
+  const msg = response.msg || ''
+  proxy.$alert(msg.replace(/</g, '&lt;').replace(/>/g, '&gt;'), '导入结果')
   emit('success')
 }
 
