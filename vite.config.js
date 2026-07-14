@@ -26,6 +26,9 @@ export default defineConfig(({ mode, command }) => {
     // 打包配置
     build: {
       // https://vite.dev/config/build-options.html
+      esbuild: {
+        drop: isBuild ? ['console'] : []
+      },
       sourcemap: isBuild ? false : 'inline',
       outDir: 'dist',
       assetsDir: 'assets',

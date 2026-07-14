@@ -167,7 +167,6 @@ async function toggleTheme(event) {
     )
     await transition.finished
   } catch (error) {
-    
     settingsStore.toggleTheme()
   }
 }

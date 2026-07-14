@@ -285,7 +285,7 @@ const getSavedWidth = () => {
       }
     }
   } catch (error) {
-    
+    /* localStorage not available */
   }
   return null
 }
@@ -296,7 +296,7 @@ const saveWidthToStorage = () => {
   try {
     localStorage.setItem(props.storageKey, sidebarWidth.value.toString())
   } catch (error) {
-    
+    /* localStorage not available */
   }
 }
 
